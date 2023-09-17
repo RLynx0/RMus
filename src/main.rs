@@ -12,16 +12,8 @@ mod opt;
 fn main() -> Result<()> {
     let opt = Opt::parse();
     let files = get_files(&opt)?;
-
-    let names = files
-        .iter()
-        // SAFETY: there cannot be empty lines
-        .map(|f| f.split('/').last().unwrap())
-        .collect::<Vec<_>>();
-
-    for name in names {
-        println!("{}", name);
+    for file in files {
+        println!("{file}");
     }
-
     Ok(())
 }

@@ -7,6 +7,9 @@ use crate::{
     opt::{MatchMode, Opt},
 };
 
+const DEFAULT_BASE_EXPR: &str = r"\.(mp3|ogg|wav)$";
+const CATCHALL_EXPR: &str = r".*";
+
 pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
     let mut exprs = opt
         .expressions
@@ -17,17 +20,19 @@ pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
         });
 
     let base_expr = match opt.all {
-        true => exprs.next().unwrap_or(Regex::new(r".*")),
-        false => Regex::new(r"\.(mp3|ogg|wav)$"),
+        true => exprs.next().unwrap_or(Regex::new(CATCHALL_EXPR)),
+        false => Regex::new(DEFAULT_BASE_EXPR),
     }?;
 
     let exprs = exprs.collect::<Result<Vec<_>, _>>()?;
 
-    Ok(locate(base_expr)?
+    let files = locate(base_expr)?
         .lines()
         .map(Rc::from)
         .filter(|file| matches_in_opt(&exprs, file, opt))
-        .collect())
+        .collect();
+
+    Ok(files)
 }
 
 fn matches_in_opt(exprs: &[Regex], file: &Rc<str>, opt: &Opt) -> bool {

@@ -1,6 +1,5 @@
 use std::{io, string::FromUtf8Error};
 
-use lazy_regex::regex;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

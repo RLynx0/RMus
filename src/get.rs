@@ -1,37 +1,47 @@
-use std::{process::Command, rc::Rc, str::FromStr};
+use std::{process::Command, rc::Rc};
 
-use lazy_regex::Regex;
+use regex::Regex;
 
-use self::apply_exprs::*;
 use crate::{
-    err::Error,
+    err::Result as RmusResult,
     opt::{MatchMode, Opt},
 };
 
-mod apply_exprs;
-
-pub fn get_files(opt: &Opt) -> Result<Vec<Rc<str>>, Error> {
+pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
     let mut exprs = opt
         .expressions
         .iter()
-        .map(|exp| Regex::from_str(&exp))
-        .collect::<Result<Vec<_>, _>>()?;
-    if !opt.all {
-        exprs.insert(0, Regex::from_str(r"\.(mp3|ogg|wav)$")?);
-    }
-    let mut exprs = exprs.into_iter();
+        .map(|exp| match opt.case_insensitive {
+            true => Regex::new(&format!("(?i){}", exp)),
+            false => Regex::new(exp),
+        });
 
-    let base_expr = exprs.next().unwrap_or(Regex::from_str(".*")?);
-    let output = locate(base_expr)?;
+    let base_expr = match opt.all {
+        true => exprs.next().unwrap_or(Regex::new(r".*")),
+        false => Regex::new(r"\.(mp3|ogg|wav)$"),
+    }?;
 
-    let files: Vec<Rc<str>> = output.lines().map(|l| Rc::from(l)).collect();
-    Ok(match opt.matchmode {
-        MatchMode::All => apply_exprs_conjunctive(files, exprs),
-        MatchMode::Any => apply_exprs_disjunctive(files, exprs),
-    })
+    let exprs = exprs.collect::<Result<Vec<_>, _>>()?;
+
+    Ok(locate(base_expr)?
+        .lines()
+        .map(Rc::from)
+        .filter(|file| matches_in_opt(&exprs, file, opt))
+        .collect())
 }
 
-fn locate(regex: Regex) -> Result<String, Error> {
+fn matches_in_opt(exprs: &[Regex], file: &Rc<str>, opt: &Opt) -> bool {
+    exprs
+        .iter()
+        .map(|expr| expr.is_match(file))
+        .reduce(|a, b| match opt.matchmode {
+            MatchMode::All => a && b,
+            MatchMode::Any => a || b,
+        })
+        .unwrap_or(true)
+}
+
+fn locate(regex: Regex) -> RmusResult<String> {
     let raw_output = Command::new("locate")
         .args(["--regex", &regex.to_string()])
         .output()?

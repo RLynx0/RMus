@@ -8,8 +8,6 @@ use crate::{
 };
 
 pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
-    let base_expr = Regex::new(&opt.pool)?;
-
     let exprs = opt
         .expressions
         .iter()
@@ -20,7 +18,7 @@ pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
         })
         .collect::<Result<Vec<_>, _>>()?;
 
-    let files = locate(base_expr, opt.case_insensitive)?
+    let files = locate(opt)?
         .lines()
         .map(Rc::from)
         .filter(|file| matches_in_opt(&exprs, file, opt))
@@ -40,15 +38,14 @@ fn matches_in_opt(exprs: &[Regex], file: &Rc<str>, opt: &Opt) -> bool {
         .unwrap_or(true)
 }
 
-fn locate(regex: Regex, insensitive: bool) -> RmusResult<String> {
-    let regex = regex.to_string();
+fn locate(opt: &Opt) -> RmusResult<String> {
+    let regex = Regex::new(&opt.pool)?.to_string();
 
     let mut args = vec![&regex, "--regex"];
-    if insensitive {
+    if opt.case_insensitive {
         args.push("-i")
     }
 
     let raw_output = Command::new("locate").args(args).output()?.stdout;
-    let output = String::from_utf8(raw_output)?;
-    Ok(output)
+    Ok(String::from_utf8(raw_output)?)
 }

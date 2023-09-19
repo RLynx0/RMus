@@ -7,24 +7,20 @@ use crate::{
     opt::{MatchMode, Opt},
 };
 
-const DEFAULT_BASE_EXPR: &str = r"\.(mp3|ogg|wav)$";
-const CATCHALL_EXPR: &str = r".*";
-
 pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
-    let mut exprs = opt.expressions.iter().map(|exp| {
-        RegexBuilder::new(exp)
-            .case_insensitive(opt.case_insensitive)
-            .build()
-    });
+    let base_expr = Regex::new(&opt.pool)?;
 
-    let base_expr = match opt.all {
-        true => exprs.next().unwrap_or(Regex::new(CATCHALL_EXPR)),
-        false => Regex::new(DEFAULT_BASE_EXPR),
-    }?;
+    let exprs = opt
+        .expressions
+        .iter()
+        .map(|exp| {
+            RegexBuilder::new(exp)
+                .case_insensitive(opt.case_insensitive)
+                .build()
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
-    let exprs = exprs.collect::<Result<Vec<_>, _>>()?;
-
-    let files = locate(base_expr)?
+    let files = locate(base_expr, opt.case_insensitive)?
         .lines()
         .map(Rc::from)
         .filter(|file| matches_in_opt(&exprs, file, opt))
@@ -44,11 +40,15 @@ fn matches_in_opt(exprs: &[Regex], file: &Rc<str>, opt: &Opt) -> bool {
         .unwrap_or(true)
 }
 
-fn locate(regex: Regex) -> RmusResult<String> {
-    let raw_output = Command::new("locate")
-        .args(["--regex", &regex.to_string()])
-        .output()?
-        .stdout;
+fn locate(regex: Regex, insensitive: bool) -> RmusResult<String> {
+    let regex = regex.to_string();
+
+    let mut args = vec![&regex, "--regex"];
+    if insensitive {
+        args.push("-i")
+    }
+
+    let raw_output = Command::new("locate").args(args).output()?.stdout;
     let output = String::from_utf8(raw_output)?;
     Ok(output)
 }

@@ -9,16 +9,16 @@ use clap::{Parser, ValueEnum};
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Opt {
-    /// Include files that don't end in .wav, .mp3 or .ogg
-    #[arg(short, long, default_value_t = false)]
-    pub all: bool,
+    /// Pool of possible results
+    #[arg(short, long, default_value = r"\.(mp3|ogg|wav)$")]
+    pub pool: String,
 
     /// Ignore case in regular expressions
     #[arg(short = 'i', long = "insensitive", default_value_t = false)]
     pub case_insensitive: bool,
 
-    /// Defines how arguments should be parsed
-    #[arg(short, long = "mode", default_value = "all")]
+    /// Set if files must match all or any expression
+    #[arg(short, long = "match", default_value = "any")]
     pub matchmode: MatchMode,
 
     /// Loop over all elements
@@ -33,7 +33,7 @@ pub struct Opt {
     pub expressions: Vec<String>,
 }
 
-#[derive(Debug, Clone, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum)]
 pub enum MatchMode {
     All,
     Any,

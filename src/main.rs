@@ -1,6 +1,9 @@
 use clap::Parser;
 
-use crate::{get::get_files, opt::Opt, out::output};
+use crate::{
+    get::get_files,
+    opt::{Opt, Output},
+};
 
 pub use crate::err::{Error, Result};
 
@@ -12,5 +15,11 @@ mod out;
 fn main() -> Result<()> {
     let opt = Opt::parse();
     let files = get_files(&opt)?;
-    output(files, &opt)
+
+    match opt.output {
+        Output::List => out::list(files),
+        Output::Tree => out::tree(files),
+    }
+
+    Ok(())
 }

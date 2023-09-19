@@ -66,7 +66,7 @@ impl Tree {
             .enumerate()
             .map(|(index, (name, branch))| {
                 branch.display_branch(
-                    // ---
+                    // FMT: -
                     root_length,
                     index,
                     preprint,
@@ -89,6 +89,7 @@ impl Tree {
         let child_preprint = compute_child_preprint(preprint, &placement);
         let preprint = compute_preprint(preprint, &placement);
         let name_separator = compute_name_separator(len);
+
         format!(
             "{}{}{}{}",
             preprint,

@@ -1,6 +1,6 @@
 use std::{process::Command, rc::Rc};
 
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 use crate::{
     err::Result as RmusResult,
@@ -11,13 +11,11 @@ const DEFAULT_BASE_EXPR: &str = r"\.(mp3|ogg|wav)$";
 const CATCHALL_EXPR: &str = r".*";
 
 pub fn get_files(opt: &Opt) -> RmusResult<Vec<Rc<str>>> {
-    let mut exprs = opt
-        .expressions
-        .iter()
-        .map(|exp| match opt.case_insensitive {
-            true => Regex::new(&format!("(?i){}", exp)),
-            false => Regex::new(exp),
-        });
+    let mut exprs = opt.expressions.iter().map(|exp| {
+        RegexBuilder::new(exp)
+            .case_insensitive(opt.case_insensitive)
+            .build()
+    });
 
     let base_expr = match opt.all {
         true => exprs.next().unwrap_or(Regex::new(CATCHALL_EXPR)),

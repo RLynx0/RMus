@@ -1,7 +1,11 @@
 use clap::{Parser, ValueEnum};
 
-/// Simple program to search and play local music files
-/// With Regex!!
+/// Searches and plays local music files
+/// with Regex!!  
+///
+/// Built on top of locate.
+/// - Locate must be installed
+/// - Locate database must be updated with `updatedb`
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Opt {

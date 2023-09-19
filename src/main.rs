@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use clap::Parser;
 use nametree::Tree;
 
@@ -14,12 +16,25 @@ fn main() -> Result<()> {
     let opt = Opt::parse();
     let files = get_files(&opt)?;
 
-    let mut names = Tree::new();
-    for file in files {
-        names.insert(&file);
+    match opt.output {
+        opt::Output::List => list(&files),
+        opt::Output::Tree => display_tree(&files),
     }
 
-    println!("{}", names);
-
     Ok(())
+}
+
+fn list(files: &Vec<Rc<str>>) {
+    for file in files {
+        println!("{}", file);
+    }
+}
+
+fn display_tree(files: &Vec<Rc<str>>) {
+    let mut nametree = Tree::new();
+    for file in files {
+        nametree.insert(file);
+    }
+
+    println!("{}", nametree);
 }

@@ -21,6 +21,10 @@ pub struct Opt {
     #[arg(short, long = "match", default_value = "any")]
     pub matchmode: MatchMode,
 
+    /// Output mode for results
+    #[arg(short, long, default_value = "tree")]
+    pub output: Output,
+
     /// Loop over all elements
     #[arg(short = 'l', long = "loop", default_value_t = false)]
     pub loop_all: bool,
@@ -37,4 +41,12 @@ pub struct Opt {
 pub enum MatchMode {
     All,
     Any,
+}
+
+#[derive(Clone, Debug, ValueEnum)]
+pub enum Output {
+    /// List full paths of results
+    List,
+    /// Display tree graph of results
+    Tree,
 }

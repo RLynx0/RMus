@@ -17,7 +17,7 @@ pub struct Opt {
     #[arg(short = 'i', long = "insensitive", default_value_t = false)]
     pub case_insensitive: bool,
 
-    /// Set if files must match all or any expression
+    /// Set how files must match given expressions
     #[arg(short, long = "match", default_value = "any")]
     pub matchmode: MatchMode,
 
@@ -39,14 +39,16 @@ pub struct Opt {
 
 #[derive(Clone, Debug, ValueEnum)]
 pub enum MatchMode {
+    /// Results must match all expressions
     All,
+    /// Results must match any expression
     Any,
 }
 
 #[derive(Clone, Debug, ValueEnum)]
 pub enum Output {
-    /// List full paths of results
+    /// List full paths of results (useful for passing to other programs)
     List,
-    /// Display tree graph of results
+    /// Display a compact tree graph of results
     Tree,
 }

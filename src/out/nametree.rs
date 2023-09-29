@@ -138,6 +138,9 @@ fn compute_name_separator(len: usize) -> &'static str {
 
 impl Display for Tree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.display_root(""))
+        match self.branches.len() {
+            0 => write!(f, "---"),
+            _ => write!(f, "{}", self.display_root("")),
+        }
     }
 }

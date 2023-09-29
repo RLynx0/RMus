@@ -51,4 +51,6 @@ pub enum Output {
     List,
     /// Display a compact tree graph of results
     Tree,
+    /// Play with rodio
+    Rodio,
 }

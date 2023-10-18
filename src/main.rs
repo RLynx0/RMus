@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     match opt.output {
         Output::List => out::list(files),
         Output::Tree => out::tree(files),
-        Output::Rodio => out::simple(files, opt.repeat_individual)?,
+        Output::Simple => out::simple(files, opt.repeat_individual)?,
     }
 
     Ok(())

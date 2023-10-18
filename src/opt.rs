@@ -18,7 +18,7 @@ pub struct Opt {
     pub case_insensitive: bool,
 
     /// Set how files must match given expressions
-    #[arg(short, long = "match", default_value = "any")]
+    #[arg(short, long = "match", default_value = "all")]
     pub matchmode: MatchMode,
 
     /// Output mode for results
@@ -52,5 +52,5 @@ pub enum Output {
     /// Display a compact tree graph of results
     Tree,
     /// Play with rodio
-    Rodio,
+    Simple,
 }
